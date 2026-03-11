@@ -289,13 +289,6 @@
                                 <a href="{{ route('campaigns.index') }}" class="btn btn-outline-primary">
                                     <i class="fas fa-eye me-2"></i>View All Campaigns
                                 </a>
-                                @auth
-                                    @if(Auth::user()->isAdmin())
-                                        <a href="{{ route('dashboard') }}" class="btn btn-primary">
-                                            <i class="fas fa-tachometer-alt me-2"></i>Full Dashboard
-                                        </a>
-                                    @endif
-                                @endauth
                             </div>
                         </div>
                     </div>

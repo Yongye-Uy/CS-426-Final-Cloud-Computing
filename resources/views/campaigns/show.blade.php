@@ -341,14 +341,8 @@
                         <li class="nav-item ms-lg-3 position-relative">
                             <button class="custom-dropdown-toggle" id="userMenuButton" aria-expanded="false">
                                 <i class="fas fa-user-circle me-2"></i>{{ Auth::user()->name ?? 'User' }}
-                                @if(method_exists(Auth::user(), 'isAdmin') && Auth::user()->isAdmin())
-                                    <span class="badge bg-warning text-dark ms-1">Admin</span>
-                                @endif
                             </button>
                             <ul class="custom-dropdown-menu" id="userMenu">
-                                @if(method_exists(Auth::user(), 'isAdmin') && Auth::user()->isAdmin())
-                                    <li><a class="dropdown-item" href="{{ route('dashboard') }}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
-                                @endif
                                 <li><a class="dropdown-item" href="{{ route('campaigns.my-campaigns') }}"><i class="fas fa-bullseye me-2"></i>My Campaigns</a></li>
                                 <li><a class="dropdown-item" href="{{ route('campaigns.create') }}"><i class="fas fa-plus me-2"></i>Create Campaign</a></li>
                                 <li><a class="dropdown-item" href="{{ route('profile') }}"><i class="fas fa-user me-2"></i>Profile</a></li>
@@ -887,9 +881,21 @@
                     // Set payment amount
                     document.getElementById('ccPaymentAmount').textContent = '$' + parseFloat(amount).toFixed(2);
 
-                    // Show credit card modal
-                    const ccModal = new bootstrap.Modal(document.getElementById('creditCardModal'));
-                    ccModal.show();
+                    // Hide donation modal first, then show credit card modal
+                    const donationModalEl = document.getElementById('donationModal');
+                    const donationModalInstance = bootstrap.Modal.getInstance(donationModalEl);
+
+                    if (donationModalInstance) {
+                        donationModalEl.addEventListener('hidden.bs.modal', function onHidden() {
+                            donationModalEl.removeEventListener('hidden.bs.modal', onHidden);
+                            const ccModal = new bootstrap.Modal(document.getElementById('creditCardModal'));
+                            ccModal.show();
+                        });
+                        donationModalInstance.hide();
+                    } else {
+                        const ccModal = new bootstrap.Modal(document.getElementById('creditCardModal'));
+                        ccModal.show();
+                    }
                 } else {
                     let errorMessage = 'Error: ' + data.message;
                     if (data.errors) {

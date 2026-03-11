@@ -4,6 +4,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Application Mode
+    |--------------------------------------------------------------------------
+    |
+    | This value determines which mode the application runs in:
+    | - 'full': All routes active (development/monolith mode)
+    | - 'api': Only API routes active (API server deployment)
+    | - 'frontend': Public website routes (Frontend deployment)
+    | - 'backend': Admin dashboard routes (Backend deployment)
+    |
+    */
+
+    'mode' => env('APP_MODE', 'full'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Name
     |--------------------------------------------------------------------------
     |

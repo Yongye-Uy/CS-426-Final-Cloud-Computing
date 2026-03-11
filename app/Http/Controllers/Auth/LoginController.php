@@ -34,22 +34,24 @@ class LoginController extends Controller
 
         // Find user first to check verification status
         $user = User::where('email', $credentials['email'])->first();
-        
+
         if ($user && !$user->is_verified) {
             return redirect()->route('register')
                 ->withErrors(['email' => 'Please verify your email address before logging in. Complete your registration by entering the verification code sent to your email.'])
                 ->withInput(['email' => $credentials['email']]);
         }
 
+        // Block admin users from logging in to frontend
+        if ($user && $user->isAdmin()) {
+            return redirect()->back()
+                ->withErrors(['email' => 'Admin accounts cannot access this application.'])
+                ->withInput();
+        }
+
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
-            
-            // Redirect based on user role
-            if (Auth::user()->isAdmin()) {
-                return redirect()->intended('/dashboard')->with('success', 'Welcome back, Admin!');
-            } else {
-                return redirect()->intended('/')->with('success', 'Welcome back!');
-            }
+
+            return redirect()->intended('/')->with('success', 'Welcome back!');
         }
 
         return redirect()->back()

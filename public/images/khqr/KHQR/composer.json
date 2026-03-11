@@ -1,0 +1,10 @@
+{
+    "require": {
+        "maxmind-db/reader": "^1.12",
+        "tecnickcom/tcpdf": "^6.9",
+        "twilio/sdk": "^8.6",
+        "khqr-gateway/bakong-khqr-php": "^1.0",
+        "endroid/qr-code": "^6.0",
+        "guzzlehttp/guzzle": "^7.9"
+    }
+}

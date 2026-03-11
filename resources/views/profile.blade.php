@@ -138,9 +138,6 @@
                         <i class="fas fa-user-circle me-2"></i>{{ Auth::user()->name ?? 'User' }}
                     </button>
                     <ul class="custom-dropdown-menu" id="userMenu">
-                        @if(Auth::user() && method_exists(Auth::user(), 'isAdmin') && Auth::user()->isAdmin())
-                            <li><a class="dropdown-item" href="{{ route('dashboard') }}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
-                        @endif
                         <li><a class="dropdown-item" href="{{ route('profile') }}"><i class="fas fa-user me-2"></i>Profile</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
@@ -234,11 +231,8 @@
                             <strong>Role:</strong>
                         </div>
                         <div class="col-sm-9">
-                            @php
-                                $isAdmin = Auth::user() && method_exists(Auth::user(), 'isAdmin') && Auth::user()->isAdmin();
-                            @endphp
-                            <span class="badge bg-{{ $isAdmin ? 'warning' : 'primary' }}">
-                                {{ Auth::user()->role->name ?? ($isAdmin ? 'Administrator' : 'User') }}
+                            <span class="badge bg-primary">
+                                {{ Auth::user()->role->name ?? 'User' }}
                             </span>
                         </div>
                     </div>
@@ -254,28 +248,10 @@
 
                     <hr class="my-4">
 
-                    @if(!$isAdmin)
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>Note:</strong> You have a regular user account. Dashboard access is restricted to administrators only. 
-                            If you need administrative access, please contact your system administrator.
-                        </div>
-                    @else
-                        <div class="alert alert-success">
-                            <i class="fas fa-crown me-2"></i>
-                            <strong>Administrator Access:</strong> You have full access to the donation tracking dashboard and all administrative features.
-                        </div>
-                    @endif
-
                     <div class="text-center mt-4">
                         <a href="{{ route('home') }}" class="btn btn-primary">
                             <i class="fas fa-home me-2"></i>Back to Home
                         </a>
-                        @if($isAdmin)
-                            <a href="{{ route('dashboard') }}" class="btn btn-success ms-2">
-                                <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
-                            </a>
-                        @endif
                     </div>
                 </div>
             </div>

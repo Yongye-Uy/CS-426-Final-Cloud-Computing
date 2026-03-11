@@ -14,6 +14,11 @@ return [
     |
     */
 
+    'api' => [
+        'url' => env('API_BASE_URL', 'http://localhost:8000/api/v1'),
+        'timeout' => env('API_TIMEOUT', 30),
+    ],
+
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],

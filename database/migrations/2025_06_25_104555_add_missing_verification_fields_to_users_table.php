@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->boolean('is_verified')->default(false)->after('verification_code_expires_at');
+            // Added is_verified back in, but without the problematic ->after() part
+            $table->boolean('is_verified')->default(0);
             $table->timestamp('verified_at')->nullable()->after('is_verified');
         });
     }

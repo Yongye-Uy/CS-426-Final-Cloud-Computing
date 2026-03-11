@@ -297,14 +297,8 @@
                         <li class="nav-item ms-lg-3 position-relative">
                             <button class="nav-link-btn" id="userMenuButton" aria-expanded="false">
                                 <i class="fas fa-user-circle me-2"></i>{{ Auth::user()->name }}
-                                @if(Auth::user()->isAdmin())
-                                    <span class="badge bg-warning text-dark ms-1">Admin</span>
-                                @endif
                             </button>
                             <ul class="custom-dropdown-menu" id="userMenu">
-                                @if(Auth::user()->isAdmin())
-                                    <li><a class="dropdown-item" href="{{ route('dashboard') }}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
-                                @endif
                                 <li><a class="dropdown-item" href="{{ route('campaigns.my-campaigns') }}"><i class="fas fa-bullseye me-2"></i>My    Campaigns</a></li>
                                 <li><a class="dropdown-item" href="{{ route('campaigns.create') }}"><i class="fas fa-plus me-2"></i>Create Campaign</a></li>
                                 <li><a class="dropdown-item" href="{{ route('profile') }}"><i class="fas fa-user me-2"></i>Profile</a></li>

@@ -116,14 +116,8 @@
                         <li class="nav-item dropdown ms-lg-3">
                             <a class="nav-link dropdown-toggle btn btn-outline-primary" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-user-circle me-2"></i>{{ Auth::user()->name }}
-                                @if(Auth::user()->isAdmin())
-                                    <span class="badge bg-warning text-dark ms-1">Admin</span>
-                                @endif
                             </a>
                             <ul class="dropdown-menu">
-                                @if(Auth::user()->isAdmin())
-                                    <li><a class="dropdown-item" href="{{ route('dashboard') }}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
-                                @endif
                                 <li><a class="dropdown-item" href="{{ route('profile') }}"><i class="fas fa-user me-2"></i>Profile</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
