@@ -422,7 +422,7 @@
                                 </div>
                             </div>
 
-                            <form id="verificationForm">
+                            <form id="verificationForm" method="POST" action="{{ route('register.verify.post') }}">
                                 @csrf
                                 <input type="hidden" id="hiddenUserId" name="user_id" value="">
                                 <div class="mb-3">
@@ -461,29 +461,6 @@
                                     <i class="fas fa-arrow-left me-2"></i>Back to Registration
                                 </button>
                             </div>
-                            
-                            <!-- Completion Section (hidden by default) -->
-                            <div class="completion-section" id="completionSection" style="display: none;">
-                                <div class="text-center">
-                                    <div class="feature-icon text-success mb-3">
-                                        <i class="fas fa-check-circle"></i>
-                                    </div>
-                                    <h4 class="fw-bold text-success">Registration Complete!</h4>
-                                    <p class="text-muted mb-4">Welcome to {{ config('app.name') }}! Your account has been successfully verified.</p>
-                                    
-                                    <div class="alert alert-success">
-                                        <i class="fas fa-trophy me-2"></i>
-                                        You can now access all features of our donation tracking platform!
-                                    </div>
-                                    
-                                    <div class="d-flex justify-content-center">
-                                        <div class="spinner-border text-primary me-3" role="status">
-                                            <span class="visually-hidden">Loading...</span>
-                                        </div>
-                                        <span class="text-muted">Redirecting to home page...</span>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
 
                         <div class="text-center mt-4 auth-links">
@@ -502,7 +479,6 @@
         let timeLeft = 15 * 60; // 15 minutes in seconds
         let countdownInterval;
         let pendingUserId = null;
-        let isVerifying = false;
 
         // Check if we need to show verification on page load
         @if($needsVerification && $userEmail)
@@ -601,107 +577,28 @@
             });
         });
 
-        // Handle verification form submission
+        // Handle verification form submission (regular form POST, not fetch)
         document.getElementById('verificationForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            if (isVerifying) return;
-
-            const verifyBtn = document.getElementById('verifyBtn');
             const code = document.getElementById('verification_code').value;
             const userId = document.getElementById('hiddenUserId').value || pendingUserId;
-            
+
             if (code.length !== 6 || !/^\d{6}$/.test(code)) {
+                e.preventDefault();
                 showAlert('danger', 'Please enter a valid 6-digit verification code.');
                 return;
             }
 
             if (!userId) {
+                e.preventDefault();
                 showAlert('danger', 'User ID not found. Please try registering again.');
                 return;
             }
 
-            verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Verifying...';
-            verifyBtn.disabled = true;
-            isVerifying = true;
-
-            // Debug logging
-            console.log('Verification attempt:', {
-                code: code,
-                userId: userId,
-                codeLength: code.length,
-                isNumeric: /^\d{6}$/.test(code)
-            });
-
-            fetch('{{ route("register.verify.post") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({
-                    verification_code: code,
-                    user_id: userId
-                })
-            })
-            .then(async response => {
-                console.log('Verification response status:', response.status);
-
-                const data = await response.json();
-                if (!response.ok) {
-                    throw { status: response.status, data: data };
-                }
-                return data;
-            })
-            .then(data => {
-                console.log('Verification response data:', data);
-                
-                if (data.success) {
-                    // Update step indicator to show completion
-                    document.getElementById('step2').classList.add('completed');
-                    document.getElementById('step2').classList.remove('active');
-                    document.getElementById('step3').classList.add('active');
-                    document.getElementById('step3').classList.add('completed');
-                    
-                    // Hide verification form and show completion message
-                    document.getElementById('verificationForm').style.display = 'none';
-                    
-                    // Show completion section
-                    showCompletionSection();
-                    
-                    showAlert('success', 'Email verified successfully! Redirecting to home page...');
-                    
-                    setTimeout(() => {
-                        window.location.href = data.redirect || '{{ route("home") }}';
-                    }, 3000);
-                } else {
-                    console.log('Verification failed:', data);
-                    if (data.errors) {
-                        let errorMessage = '';
-                        for (let field in data.errors) {
-                            errorMessage += data.errors[field].join(', ') + '<br>';
-                        }
-                        showAlert('danger', errorMessage);
-                    } else {
-                        showAlert('danger', data.message || 'Verification failed. Please try again.');
-                    }
-                    verifyBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Verify Email';
-                    verifyBtn.disabled = false;
-                    isVerifying = false;
-                }
-            })
-            .catch(error => {
-                console.error('Verification error:', error);
-                const message = (error.data && error.data.message)
-                    ? error.data.message
-                    : ('An error occurred during verification.' + (error.message ? ' Error: ' + error.message : ''));
-                showAlert('danger', message);
-                verifyBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Verify Email';
-                verifyBtn.disabled = false;
-                isVerifying = false;
-            });
+            // Set user_id in hidden field and let the form submit normally
+            document.getElementById('hiddenUserId').value = userId;
+            document.getElementById('verifyBtn').innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Verifying...';
+            document.getElementById('verifyBtn').disabled = true;
+            // Form submits as a regular POST — server handles redirect
         });
 
         // Handle resend code
@@ -754,7 +651,7 @@
             
             if (this.value.length === 6) {
                 setTimeout(() => {
-                    document.getElementById('verificationForm').dispatchEvent(new Event('submit'));
+                    document.getElementById('verificationForm').requestSubmit();
                 }, 500);
             }
         });
@@ -820,18 +717,6 @@
             if (countdownInterval) {
                 clearInterval(countdownInterval);
             }
-        }
-
-        // Show completion section
-        function showCompletionSection() {
-            // Hide verification form elements
-            document.querySelector('.verification-section .text-center:first-child').style.display = 'none';
-            document.getElementById('verificationForm').style.display = 'none';
-            document.querySelector('.verification-section .text-center:last-child').style.display = 'none';
-            
-            // Show completion section
-            document.getElementById('completionSection').style.display = 'block';
-            document.getElementById('completionSection').style.animation = 'slideDown 0.5s ease-out';
         }
 
         // Find user for verification (for existing users)

@@ -7,7 +7,6 @@ use App\Models\User;
 use App\Models\Role;
 use App\Mail\VerificationCodeMail;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
@@ -109,9 +108,8 @@ class RegisterController extends Controller
             $user = User::find($userId);
             if ($user && !$user->is_verified) {
                 if ($user->verifyCode($code)) {
-                    Auth::login($user);
-                    return redirect()->route('home')
-                        ->with('success', 'Email verified successfully! Welcome to ' . config('app.name') . '!');
+                    return redirect()->route('login')
+                        ->with('success', 'Email verified successfully! Please login to continue.');
                 } else {
                     return redirect()->route('register')
                         ->withErrors(['verification' => 'Invalid or expired verification code. Please request a new one.'])
@@ -182,36 +180,33 @@ class RegisterController extends Controller
         if ($user->is_verified) {
             Log::info('User already verified');
 
-            Auth::login($user);
-
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Account already verified',
-                    'redirect' => route('home')
+                    'message' => 'Account already verified. Please login.',
+                    'redirect' => route('login')
                 ]);
             }
 
-            return redirect()->route('home')
-                ->with('success', 'Account already verified. Welcome back!');
+            return redirect()->route('login')
+                ->with('success', 'Account already verified. Please login.');
         }
 
         if ($user->verifyCode($request->verification_code)) {
             Log::info('Verification successful', ['user_id' => $user->id]);
-            
+
             Session::forget('pending_user_id');
-            Auth::login($user);
-            
+
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Email verified successfully! Welcome to ' . config('app.name') . '!',
-                    'redirect' => route('home')
+                    'message' => 'Email verified successfully! Please login to continue.',
+                    'redirect' => route('login')
                 ]);
             }
-            
-            return redirect()->route('home')
-                ->with('success', 'Email verified successfully! Welcome to ' . config('app.name') . '!');
+
+            return redirect()->route('login')
+                ->with('success', 'Email verified successfully! Please login to continue.');
         } else {
             Log::warning('Verification failed', [
                 'user_id' => $user->id,
@@ -231,7 +226,9 @@ class RegisterController extends Controller
                 ], 422);
             }
             
-            return redirect()->back()->withErrors(['verification_code' => $message]);
+            return redirect()->route('register')
+                ->withErrors(['verification' => $message])
+                ->withInput(['email' => $user->email]);
         }
     }
 
