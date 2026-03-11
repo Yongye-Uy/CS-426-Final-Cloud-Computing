@@ -26,12 +26,13 @@ class DatabaseSeeder extends Seeder
         // Create admin user
         $adminUser = User::firstOrCreate(
             ['email' => 'admin@donationtracker.com'],
-            [
-                'name' => 'Admin User',
-                'email_verified_at' => now(),
-                'password' => Hash::make('password'),
-                'role_id' => 1, // Admin role
-            ]
+    [
+        'name' => 'Admin User',
+        'is_verified' => true, // <-- Use your custom boolean
+        'verified_at' => now(), // <-- Use your custom timestamp
+        'password' => Hash::make('password'),
+        'role_id' => 1, 
+    ]
         );
 
         // Create regular user
