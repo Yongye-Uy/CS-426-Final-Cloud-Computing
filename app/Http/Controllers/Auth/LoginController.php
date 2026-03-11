@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Mail\VerificationCodeMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Mail;
 
 class LoginController extends Controller
 {
@@ -36,8 +38,12 @@ class LoginController extends Controller
         $user = User::where('email', $credentials['email'])->first();
 
         if ($user && !$user->is_verified) {
+            // Auto-resend a new verification code
+            $verificationCode = $user->generateVerificationCode();
+            Mail::to($user->email)->send(new VerificationCodeMail($user, $verificationCode));
+
             return redirect()->route('register')
-                ->withErrors(['email' => 'Please verify your email address before logging in. Complete your registration by entering the verification code sent to your email.'])
+                ->withErrors(['verification' => 'Your email is not verified yet. A new verification code has been sent to your email.'])
                 ->withInput(['email' => $credentials['email']]);
         }
 

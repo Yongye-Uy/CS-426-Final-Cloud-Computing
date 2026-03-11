@@ -181,17 +181,19 @@ class RegisterController extends Controller
 
         if ($user->is_verified) {
             Log::info('User already verified');
-            
+
+            Auth::login($user);
+
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Account already verified',
-                    'redirect' => route('login')
+                    'redirect' => route('home')
                 ]);
             }
-            
-            return redirect()->route('login')
-                ->with('success', 'Account already verified. Please login.');
+
+            return redirect()->route('home')
+                ->with('success', 'Account already verified. Welcome back!');
         }
 
         if ($user->verifyCode($request->verification_code)) {

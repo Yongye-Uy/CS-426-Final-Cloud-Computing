@@ -502,6 +502,7 @@
         let timeLeft = 15 * 60; // 15 minutes in seconds
         let countdownInterval;
         let pendingUserId = null;
+        let isVerifying = false;
 
         // Check if we need to show verification on page load
         @if($needsVerification && $userEmail)
@@ -603,7 +604,9 @@
         // Handle verification form submission
         document.getElementById('verificationForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
+            if (isVerifying) return;
+
             const verifyBtn = document.getElementById('verifyBtn');
             const code = document.getElementById('verification_code').value;
             const userId = document.getElementById('hiddenUserId').value || pendingUserId;
@@ -620,6 +623,7 @@
 
             verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Verifying...';
             verifyBtn.disabled = true;
+            isVerifying = true;
 
             // Debug logging
             console.log('Verification attempt:', {
@@ -642,14 +646,14 @@
                     user_id: userId
                 })
             })
-            .then(response => {
+            .then(async response => {
                 console.log('Verification response status:', response.status);
-                
+
+                const data = await response.json();
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw { status: response.status, data: data };
                 }
-                
-                return response.json();
+                return data;
             })
             .then(data => {
                 console.log('Verification response data:', data);
@@ -685,13 +689,18 @@
                     }
                     verifyBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Verify Email';
                     verifyBtn.disabled = false;
+                    isVerifying = false;
                 }
             })
             .catch(error => {
                 console.error('Verification error:', error);
-                showAlert('danger', 'An error occurred during verification. Error: ' + error.message);
+                const message = (error.data && error.data.message)
+                    ? error.data.message
+                    : ('An error occurred during verification.' + (error.message ? ' Error: ' + error.message : ''));
+                showAlert('danger', message);
                 verifyBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Verify Email';
                 verifyBtn.disabled = false;
+                isVerifying = false;
             });
         });
 
