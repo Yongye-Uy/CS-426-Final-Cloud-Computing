@@ -8,6 +8,10 @@ use App\Http\Controllers\DonationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 
+Route::get('/test-ip', function () {
+    return request()->server('SERVER_ADDR');
+});
+
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 
