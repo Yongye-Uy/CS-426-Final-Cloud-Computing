@@ -521,11 +521,18 @@
             .then(response => {
                 console.log('Response status:', response.status);
                 console.log('Response headers:', response.headers);
-                
+
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                    }).catch(parseError => {
+                        if (parseError.message && !parseError.message.includes('HTTP error')) {
+                            throw parseError;
+                        }
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    });
                 }
-                
+
                 return response.json();
             })
             .then(data => {
